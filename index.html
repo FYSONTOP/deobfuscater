@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Deobfuscator</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        textarea { width: 100%; height: 200px; }
+        pre { background-color: #f4f4f4; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>HTML Deobfuscator</h1>
+    <p>Enter the obfuscated HTML code below:</p>
+    <textarea id="obfuscatedInput"></textarea>
+    <button onclick="deobfuscateHTML()">Deobfuscate</button>
+    <h2>Deobfuscated HTML:</h2>
+    <pre id="deobfuscatedOutput"></pre>
+
+    <script>
+        function deobfuscateHTML() {
+            const obfuscatedInput = document.getElementById('obfuscatedInput').value;
+            const base64Pattern = /eval\(atob\('([^']+)'\)\)/;
+            const match = obfuscatedInput.match(base64Pattern);
+
+            if (match) {
+                const base64String = match[1];
+                const scriptContent = atob(base64String);
+
+                const partsPattern = /var parts = (\[[^\]]+\]);/;
+                const partsMatch = scriptContent.match(partsPattern);
+
+                if (partsMatch) {
+                    const parts = eval(partsMatch[1]);
+                    let code = parts.join('');
+                    code = code.replace(/\\x([0-9A-Fa-f]{2})/g, (_, hex) => {
+                        return String.fromCharCode(parseInt(hex, 16));
+                    });
+
+                    const txt = document.createElement('textarea');
+                    txt.innerHTML = code;
+                    const deobfuscatedHTML = txt.value;
+
+                    document.getElementById('deobfuscatedOutput').textContent = deobfuscatedHTML;
+                } else {
+                    alert('Unable to extract parts array from the script.');
+                }
+            } else {
+                alert('Invalid obfuscated input.');
+            }
+        }
+    </script>
+</body>
+</html>
